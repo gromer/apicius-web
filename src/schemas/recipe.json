@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/recipe.json",
+  "title": "Recipe",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the recipe"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the recipe"
+    },
+    "description": {
+      "type": "string",
+      "description": "A detailed description of the recipe"
+    },
+    "prepTime": {
+      "type": ["string", "null"],
+      "format": "duration",
+      "description": "Preparation time in ISO 8601 duration format"
+    },
+    "cookTime": {
+      "type": ["string", "null"],
+      "format": "duration",
+      "description": "Cooking time in ISO 8601 duration format"
+    },
+    "totalTime": {
+      "type": ["string", "null"],
+      "format": "duration",
+      "description": "Total time to prepare the recipe in ISO 8601 duration format"
+    },
+    "servings": {
+      "type": "number",
+      "minimum": 1,
+      "description": "The number of servings the recipe makes"
+    },
+    "servingUnit": {
+      "type": "string",
+      "description": "Unit of measurement for the servings"
+    },
+    "starRating": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Star rating for the recipe (0 to 5 scale)"
+    },
+    "imageUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the recipe image"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the recipe was created"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the recipe was last updated"
+    },
+    "ingredients": {
+      "type": "array",
+      "description": "List of ingredients used in the recipe",
+      "items": {
+        "$ref": "#/$defs/Ingredient"
+      }
+    },
+    "instructions": {
+      "type": "array",
+      "description": "Step-by-step instructions for preparing the recipe",
+      "items": {
+        "$ref": "#/$defs/Instruction"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "description": "Categories that the recipe belongs to",
+      "items": {
+        "$ref": "#/$defs/Category"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Notes associated with the recipe",
+      "items": {
+        "$ref": "#/$defs/Note"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags associated with the recipe",
+      "items": {
+        "$ref": "#/$defs/Tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "servings",
+    "servingUnit",
+    "createdAt",
+    "updatedAt",
+    "ingredients",
+    "instructions",
+    "categories",
+    "tags"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "Ingredient": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "grouping": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "quantity", "unit"],
+      "additionalProperties": false
+    },
+    "Instruction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": {
+          "type": "string"
+        },
+        "stepNumber": {
+          "type": "integer"
+        },
+        "timeEstimate": {
+          "type": ["string", "null"],
+          "format": "duration"
+        }
+      },
+      "required": ["id", "description", "stepNumber"],
+      "additionalProperties": false
+    },
+    "Category": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name"],
+      "additionalProperties": false
+    },
+    "Note": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "text": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer"
+        }
+      }
+    },
+    "Tag": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "name"],
+      "additionalProperties": false
+    }
+  }
+}
