@@ -1,6 +1,7 @@
 # Apicius 🧑‍🍳
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/gromer/apicius)
+[Edit in Bolt ⚡️](https://bolt.new/~/github.com/gromer/apicius-web)  
+[Edit in StackBlitz ⚡️](https://stackblitz.com/~/github.com/gromer/apicius-web)
 
 ## Dependencies
 
