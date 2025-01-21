@@ -6,6 +6,7 @@ import { RecipePage } from './pages/RecipePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { BetaAccessPage } from './pages/BetaAccessPage';
 import { Layout } from './components/Layout';
 
 export default function App() {
@@ -14,8 +15,8 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/change-password" element={<ChangePasswordPage />} />
+      <Route path="/" element={<BetaAccessPage />} />
       <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/import" replace />} />
         <Route path="/import" element={<ImportPage />} />
         <Route path="/recipes/:recipeId" element={<RecipePage />} />
         <Route path="/settings" element={<SettingsPage />} />
