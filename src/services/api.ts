@@ -55,7 +55,7 @@ class ApiClient {
   };
 
   constructor() {
-    this.baseUrl = 'https://apicius-api.onrender.com';
+    this.baseUrl = import.meta.env.VITE_API_URL!;
   }
 
   private async getAuthHeader(): Promise<HeadersInit> {
