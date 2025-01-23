@@ -87,6 +87,7 @@ class ApiClient {
 
   async updatePassword(data: UpdatePasswordRequest): Promise<Response> {
     return fetch(`${this.baseUrl}/auth/update-password`, {
+      credentials: 'include',
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify(data),
@@ -106,6 +107,7 @@ class ApiClient {
   async getPreferences(): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/preferences`, {
+      credentials: 'include',
       headers,
     });
   }
@@ -113,6 +115,7 @@ class ApiClient {
   async updatePreferences(data: Partial<UserPreferences>): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/preferences`, {
+      credentials: 'include',
       method: 'PATCH',
       headers,
       body: JSON.stringify(data),
@@ -123,6 +126,7 @@ class ApiClient {
   async getRecipes(): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/recipes`, {
+      credentials: 'include',
       headers,
     });
   }
@@ -130,6 +134,7 @@ class ApiClient {
   async createRecipe(data: Recipe): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/recipes`, {
+      credentials: 'include',
       method: 'POST',
       headers,
       body: JSON.stringify(data),
@@ -139,6 +144,7 @@ class ApiClient {
   async getRecipe(id: string): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/recipes/${id}`, {
+      credentials: 'include',
       headers,
     });
   }
@@ -146,6 +152,7 @@ class ApiClient {
   async updateRecipe(id: string, data: Partial<Recipe>): Promise<Response> {
     const headers = await this.getAuthHeader();
     return fetch(`${this.baseUrl}/recipes/${id}`, {
+      credentials: 'include',
       method: 'PATCH',
       headers,
       body: JSON.stringify(data),
@@ -155,6 +162,7 @@ class ApiClient {
   async deleteRecipe(id: string): Promise<void> {
     const headers = await this.getAuthHeader();
     await fetch(`${this.baseUrl}/recipes/${id}`, {
+      credentials: 'include',
       method: 'DELETE',
       headers,
     });
@@ -168,12 +176,13 @@ class ApiClient {
     });
 
     const response = await fetch(`${this.baseUrl}/recipes/import-image`, {
-      method: 'POST',
+      body: formData,
+      credentials: 'include',
       headers: {
         ...headers,
         'Content-Type': 'multipart/form-data',
       },
-      body: formData,
+      method: 'POST',
     });
 
     var json = await response.json();
@@ -183,9 +192,10 @@ class ApiClient {
   async importRecipeFromText(text: string): Promise<ImportRecipeResponseBody> {
     const headers = await this.getAuthHeader();
     const response = await fetch(`${this.baseUrl}/recipes/import-text`, {
-      method: 'POST',
-      headers,
       body: JSON.stringify({ text }),
+      credentials: 'include',
+      headers,
+      method: 'POST',
     });
 
     var json = await response.json();
