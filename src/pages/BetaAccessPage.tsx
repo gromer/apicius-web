@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { ChefHat, X } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
-import { betaService } from '../services/beta';
+import { apiClient } from '../services/api';
 
 interface Screenshot {
   id: number;
@@ -56,7 +56,8 @@ export function BetaAccessPage() {
 
     try {
       setIsSubmitting(true);
-      await betaService.requestAccess(email);
+      //await betaService.requestAccess(email);
+      await apiClient.addBetaUser({ email });
       setSubmitted(true);
       setEmail('');
     } catch (err) {
