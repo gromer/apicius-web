@@ -5,7 +5,6 @@ export interface OpenAIUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
-  total_calls: number;
 }
 
 export const usageService = {
@@ -30,29 +29,25 @@ export const usageService = {
         return {
           prompt_tokens: 0,
           completion_tokens: 0,
-          total_tokens: 0,
-          total_calls: 0
+          total_tokens: 0
         };
       }
 
       return data.reduce((acc, curr) => ({
         prompt_tokens: acc.prompt_tokens + curr.prompt_tokens,
         completion_tokens: acc.completion_tokens + curr.completion_tokens,
-        total_tokens: acc.total_tokens + curr.total_tokens,
-        total_calls: acc.total_calls + 1
+        total_tokens: acc.total_tokens + curr.total_tokens
       }), {
         prompt_tokens: 0,
         completion_tokens: 0,
-        total_tokens: 0,
-        total_calls: 0
+        total_tokens: 0
       });
     } catch (err) {
       console.error('Failed to fetch usage data:', err);
       return {
         prompt_tokens: 0,
         completion_tokens: 0,
-        total_tokens: 0,
-        total_calls: 0
+        total_tokens: 0
       };
     }
   }

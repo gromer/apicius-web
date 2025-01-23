@@ -20,14 +20,31 @@ interface BetaUserRequest {
 }
 
 interface UserPreferences {
-  theme?: string;
-  notifications_enabled?: boolean;
+  tavatarUrl: string;
+  displayName: string;
+  id: string;
+  theme: string;
 }
 
 interface Recipe {
-  title: string;
-  description: string;
-  is_public: boolean;
+  createdAt: Date;
+  id: string;
+  isPublic: boolean;
+  recipeMarkdown: string;
+  updatedAt: Date | null;
+  userId: string;
+}
+
+interface BaseResponseBody {
+  error: ErrorResponse | null;
+}
+
+interface ErrorResponse {
+    error: string;
+}
+
+interface ImportRecipeResponseBody extends BaseResponseBody {
+  importedRecipe: Recipe | null;
 }
 
 // API Client class
@@ -135,20 +152,22 @@ class ApiClient {
     });
   }
 
-  async deleteRecipe(id: string): Promise<Response> {
+  async deleteRecipe(id: string): Promise<void> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes/${id}`, {
+    await fetch(`${this.baseUrl}/recipes/${id}`, {
       method: 'DELETE',
       headers,
     });
   }
 
-  async importRecipeFromImage(file: File): Promise<Response> {
+  async importRecipeFromImage(files: File[]): Promise<ImportRecipeResponseBody> {
     const headers = await this.getAuthHeader();
     const formData = new FormData();
-    formData.append('file', file);
+    files.forEach(file => {
+      formData.append('files[]', file);
+    });
 
-    return fetch(`${this.baseUrl}/recipes/import-image`, {
+    const response = await fetch(`${this.baseUrl}/recipes/import-image`, {
       method: 'POST',
       headers: {
         ...headers,
@@ -156,15 +175,21 @@ class ApiClient {
       },
       body: formData,
     });
+
+    var json = await response.json();
+    return json as ImportRecipeResponseBody;
   }
 
-  async importRecipeFromText(text: string): Promise<Response> {
+  async importRecipeFromText(text: string): Promise<ImportRecipeResponseBody> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes/import-text`, {
+    const response = await fetch(`${this.baseUrl}/recipes/import-text`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ text }),
     });
+
+    var json = await response.json();
+    return json as ImportRecipeResponseBody;
   }
 
   // Error handling helper

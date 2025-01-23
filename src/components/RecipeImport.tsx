@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Loader2, Save, Clipboard, X } from 'lucide-react';
-import { openAIService } from '../services/openai';
 import { recipesService } from '../services/recipes';
 import ReactMarkdown from 'react-markdown';
 import { useUser } from '../contexts/UserContext';
 import { MarkdownEditor } from './MarkdownEditor';
+import { apiClient } from '../services/api';
 
 export function RecipeImport() {
   const { user } = useUser();
@@ -75,37 +75,41 @@ export function RecipeImport() {
 
       if (importMethod === 'file') {
         // Convert all images to base64 in parallel
-        const base64Images = await Promise.all(
-          images.map(
-            (image) =>
-              new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  const base64 = reader.result?.toString().split(',')[1];
-                  if (base64) {
-                    resolve(base64);
-                  } else {
-                    reject(new Error('Failed to convert image to base64'));
-                  }
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(image);
-              })
-          )
-        );
+        // const base64Images = await Promise.all(
+        //   images.map(
+        //     (image) =>
+        //       new Promise<string>((resolve, reject) => {
+        //         const reader = new FileReader();
+        //         reader.onload = () => {
+        //           const base64 = reader.result?.toString().split(',')[1];
+        //           if (base64) {
+        //             resolve(base64);
+        //           } else {
+        //             reject(new Error('Failed to convert image to base64'));
+        //           }
+        //         };
+        //         reader.onerror = reject;
+        //         reader.readAsDataURL(image);
+        //       })
+        //   )
+        // );
 
-        let fullRecipe = '';
-        for await (const chunk of openAIService.extractRecipeFromImage(base64Images, true, user?.id)) {
-          fullRecipe += chunk;
-          setRecipe(fullRecipe);
-        }
+        const importRecipeResponse = await apiClient.importRecipeFromImage(images)
+        setRecipe(importRecipeResponse.importedRecipe!.recipeMarkdown);
+        // let fullRecipe = '';
+        // for await (const chunk of openAIService.extractRecipeFromImage(base64Images, true, user?.id)) {
+        //   fullRecipe += chunk;
+        //   setRecipe(fullRecipe);
+        // }
         setIsStreaming(false);
       } else {
-        let fullRecipe = '';
-        for await (const chunk of openAIService.extractRecipeFromText(recipeText, 'text', true, user?.id)) {
-          fullRecipe += chunk;
-          setRecipe(fullRecipe);
-        }
+        const importRecipeResponse = await apiClient.importRecipeFromText(recipeText)
+        setRecipe(importRecipeResponse.importedRecipe!.recipeMarkdown);
+        // let fullRecipe = '';
+        // for await (const chunk of openAIService.extractRecipeFromText(recipeText, 'text', true, user?.id)) {
+        //   fullRecipe += chunk;
+        //   setRecipe(fullRecipe);
+        // }
         setIsStreaming(false);
       }
     } catch (err) {
