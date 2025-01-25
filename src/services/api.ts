@@ -68,32 +68,6 @@ class ApiClient {
     };
   }
 
-  // Auth endpoints
-  async login(data: LoginRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
-  }
-
-  async forgotPassword(data: ForgotPasswordRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/forgot-password`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updatePassword(data: UpdatePasswordRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/update-password`, {
-      credentials: 'include',
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
-  }
-
   // Beta Users endpoints
   async addBetaUser(data: BetaUserRequest): Promise<Response> {
     return fetch(`${this.baseUrl}/beta-users`, {
