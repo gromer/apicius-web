@@ -23,18 +23,16 @@ export const settingsService = {
         .from('user_settings')
         .select('display_name, theme, avatar_url')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
       if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          return DEFAULT_SETTINGS;
-        }
-        throw error;
+        console.error('Failed to load settings:', error);
+        return DEFAULT_SETTINGS;
       }
 
       return data || DEFAULT_SETTINGS;
     } catch (error) {
-      console.error('Failed to load settings from database:', error);
+      console.error('Failed to load settings:', error);
       return DEFAULT_SETTINGS;
     }
   },
@@ -45,34 +43,19 @@ export const settingsService = {
     }
 
     try {
-      const existingSettings = await this.getUserSettings(userId);
+      const { error: upsertError } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: userId,
+          display_name: settings.display_name,
+          theme: settings.theme,
+          avatar_url: settings.avatar_url,
+          updated_at: new Date().toISOString()
+        });
 
-      if (existingSettings) {
-        const { error } = await supabase
-          .from('user_settings')
-          .update({
-            display_name: settings.display_name,
-            theme: settings.theme,
-            avatar_url: settings.avatar_url,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('user_settings')
-          .insert([{
-            user_id: userId,
-            display_name: settings.display_name,
-            theme: settings.theme,
-            avatar_url: settings.avatar_url
-          }]);
-
-        if (error) throw error;
-      }
+      if (upsertError) throw upsertError;
     } catch (error) {
-      console.error('Failed to save settings to database:', error);
+      console.error('Failed to save settings:', error);
       throw new Error('Failed to save settings');
     }
   }

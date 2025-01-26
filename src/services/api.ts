@@ -20,7 +20,7 @@ interface BetaUserRequest {
 }
 
 interface UserPreferences {
-  tavatarUrl: string;
+  avatarUrl: string;
   displayName: string;
   id: string;
   theme: string;
@@ -47,6 +47,18 @@ interface ImportRecipeResponseBody extends BaseResponseBody {
   importedRecipe: Recipe | null;
 }
 
+export const apiService = {
+  async addBetaUser(data: BetaUserRequest): Promise<Response> {
+    return fetch(`${this.baseUrl}/beta-users`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+  },
+
+  
+};
+
 // API Client class
 class ApiClient {
   private baseUrl: string;
@@ -66,32 +78,6 @@ class ApiClient {
       ...this.headers,
       Authorization: token ? `Bearer ${token}` : '',
     };
-  }
-
-  // Auth endpoints
-  async login(data: LoginRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
-  }
-
-  async forgotPassword(data: ForgotPasswordRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/forgot-password`, {
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updatePassword(data: UpdatePasswordRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/auth/update-password`, {
-      credentials: 'include',
-      method: 'POST',
-      headers: this.headers,
-      body: JSON.stringify(data),
-    });
   }
 
   // Beta Users endpoints

@@ -24,6 +24,7 @@ export function AvatarPopup({ isOpen, onClose }: AvatarPopupProps) {
       setUsage(data);
     } catch (err) {
       console.error('Failed to load usage data:', err);
+      setUsage(null);
     }
   };
 
@@ -50,25 +51,25 @@ export function AvatarPopup({ isOpen, onClose }: AvatarPopupProps) {
             <div>
               <p className="text-gray-500 dark:text-gray-400">Total Calls</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {usage?.total_calls.toLocaleString() || '0'}
+                {usage?.total_calls?.toLocaleString() ?? '0'}
               </p>
             </div>
             <div>
               <p className="text-gray-500 dark:text-gray-400">Total Tokens</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {usage?.total_tokens.toLocaleString() || '0'}
+                {usage?.total_tokens?.toLocaleString() ?? '0'}
               </p>
             </div>
             <div>
               <p className="text-gray-500 dark:text-gray-400">Prompt Tokens</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {usage?.prompt_tokens.toLocaleString() || '0'}
+                {usage?.prompt_tokens?.toLocaleString() ?? '0'}
               </p>
             </div>
             <div>
               <p className="text-gray-500 dark:text-gray-400">Completion Tokens</p>
               <p className="font-medium text-gray-900 dark:text-white">
-                {usage?.completion_tokens.toLocaleString() || '0'}
+                {usage?.completion_tokens?.toLocaleString() ?? '0'}
               </p>
             </div>
           </div>

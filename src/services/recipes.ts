@@ -1,3 +1,4 @@
+import { apiClient } from './api';
 import { supabase } from './supabase';
 
 export interface SaveRecipeParams {
@@ -13,6 +14,7 @@ export const recipesService = {
     }
 
     if (recipeId) {
+      //const recipe = await apiClient.
       const { data, error } = await supabase
         .from('recipes')
         .update({
