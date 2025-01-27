@@ -47,6 +47,18 @@ interface ImportRecipeResponseBody extends BaseResponseBody {
   importedRecipe: Recipe | null;
 }
 
+export const apiService = {
+  async addBetaUser(data: BetaUserRequest): Promise<Response> {
+    return fetch(`${this.baseUrl}/beta-users`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+  },
+
+  
+};
+
 // API Client class
 class ApiClient {
   private baseUrl: string;
