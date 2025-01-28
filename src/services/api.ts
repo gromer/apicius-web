@@ -20,7 +20,7 @@ interface BetaUserRequest {
 }
 
 interface UserPreferences {
-  tavatarUrl: string;
+  avatarUrl: string;
   displayName: string;
   id: string;
   theme: string;
