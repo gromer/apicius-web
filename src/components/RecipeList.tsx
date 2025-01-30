@@ -1,9 +1,11 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { recipesService } from '../services/recipes';
 import { useUser } from '../contexts/UserContext';
+import { apiClient } from '../services/api';
+import { recipesService } from '../services/recipes';
+import { Recipe } from '../types/api';
 
-interface Recipe {
+interface RecipeModel {
   id: string;
   recipe_markdown: string;
   created_at: string;
@@ -16,7 +18,7 @@ interface RecipeListProps {
 
 export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps) {
   const { user } = useUser();
-  const [recipes, setRecipes] = React.useState<Recipe[]>([]);
+  const [recipes, setRecipes] = React.useState<RecipeModel[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -27,9 +29,20 @@ export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps
         try {
           setIsLoading(true);
           setError(null);
-          const { data, error } = await recipesService.getUserRecipes(user.id);
-          if (error) throw error;
-          setRecipes(data || []);
+          const getRecipesResponse = await apiClient.getRecipes();
+          if (getRecipesResponse.error) {
+            throw new Error(getRecipesResponse.error.message);
+          }
+
+          const recipes = getRecipesResponse.recipes ?? [];
+          console.log('Recipe count: ' + recipes.length);
+          const mapper = (recipe: Recipe) => ({
+            id: recipe.id,
+            created_at: recipe.createdAt.toString(),
+            recipe_markdown: recipe.recipeMarkdown
+          });
+
+          setRecipes(recipes.map(mapper));
         } catch (err) {
           console.error('Failed to load recipes:', err);
           setError('Failed to load recipes');
@@ -73,11 +86,10 @@ export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps
             <li key={recipe.id}>
               <button
                 onClick={() => onRecipeSelect(recipe.id)}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700 ${
-                  selectedRecipeId === recipe.id 
-                    ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' 
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700 ${selectedRecipeId === recipe.id
+                    ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
                     : 'text-gray-900 dark:text-gray-100'
-                }`}
+                  }`}
               >
                 <div className="font-medium">{getRecipeName(recipe.recipe_markdown)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">

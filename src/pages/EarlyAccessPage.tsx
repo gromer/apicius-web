@@ -44,10 +44,11 @@ export function EarlyAccessPage() {
     return <Navigate to="/import" replace />;
   }
 
-  const handleBetaRequest = async (e: React.FormEvent) => {
+  const handleEarlyAccessRequestSubmission = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    // TODO: Add better email validation
     if (!email) {
       setError('Please enter your email address');
       return;
@@ -55,7 +56,7 @@ export function EarlyAccessPage() {
 
     try {
       setIsSubmitting(true);
-      await apiClient.addBetaUser({ email });
+      await apiClient.addEarlyAccessRequest({ email });
       setSubmitted(true);
       setEmail('');
     } catch (err) {
@@ -164,7 +165,7 @@ export function EarlyAccessPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleBetaRequest} className="mt-8 space-y-6">
+              <form onSubmit={handleEarlyAccessRequestSubmission} className="mt-8 space-y-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email address

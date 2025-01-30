@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clipboard, Save, Trash2 } from 'lucide-react';
+import { Clipboard, Trash2 } from 'lucide-react';
+import { apiClient } from '../services/api';
 import { recipesService } from '../services/recipes';
 import ReactMarkdown from 'react-markdown';
 import { useUser } from '../contexts/UserContext';
@@ -27,12 +28,15 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
 
   const loadRecipe = async () => {
     try {
-      const { data, error } = await recipesService.getUserRecipes(user?.id);
-      if (error) throw error;
+      const recipe = await apiClient.getRecipe(recipeId);
       
-      const selectedRecipe = data?.find(r => r.id === recipeId);
-      if (selectedRecipe) {
-        setRecipe(selectedRecipe.recipe_markdown);
+      if (recipe.error) {
+        throw new Error(recipe.error.message);
+      }
+
+      const recipeMarkdown = recipe.recipe?.recipeMarkdown;
+      if (recipeMarkdown) {
+        setRecipe(recipeMarkdown);
       } else {
         navigate('/import');
       }

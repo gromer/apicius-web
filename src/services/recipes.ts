@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { apiClient } from '../services/api';
 
 export interface SaveRecipeParams {
   recipeMarkdown: string;
@@ -13,41 +14,24 @@ export const recipesService = {
     }
 
     if (recipeId) {
-      const { data, error } = await supabase
-        .from('recipes')
-        .update({
-          recipe_markdown: recipeMarkdown,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipeId)
-        .eq('user_id', userId)
-        .select()
-        .single();
+      await apiClient.updateRecipe(recipeId, {
+        recipeMarkdown,
+        updatedAt: new Date()
+      })
 
-      if (error) {
-        throw new Error(`Failed to update recipe: ${error.message}`);
-      }
-
-      return data;
+      return;
     }
 
-    const { data, error } = await supabase
-      .from('recipes')
-      .insert([
-        {
-          user_id: userId,
-          recipe_markdown: recipeMarkdown,
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select()
-      .single();
+    const createRecipeResponse = await apiClient.createRecipe({
+      isPublic: false,
+      recipeMarkdown
+    });
 
-    if (error) {
-      throw new Error(`Failed to save recipe: ${error.message}`);
+    if (createRecipeResponse.error) {
+      throw new Error(`Failed to save recipe: ${createRecipeResponse.error.message}`);
     }
 
-    return data;
+    return createRecipeResponse.createdRecipe;
   },
 
   async getUserRecipes(userId?: string) {
@@ -55,22 +39,11 @@ export const recipesService = {
       throw new Error('User ID is required');
     }
 
-    return await supabase
-      .from('recipes')
-      .select('id, recipe_markdown, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    return await apiClient.getRecipes();
   },
 
   async deleteRecipe(recipeId: string) {
-    const { error } = await supabase
-      .from('recipes')
-      .delete()
-      .eq('id', recipeId);
-
-    if (error) {
-      throw new Error(`Failed to delete recipe: ${error.message}`);
-    }
+    await apiClient.deleteRecipe(recipeId);
 
     return { error: null };
   }
