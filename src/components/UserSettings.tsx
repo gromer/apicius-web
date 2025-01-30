@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Moon, Sun, Monitor, Upload, X } from 'lucide-react';
+import { apiClient } from '../services/api';
 import { settingsService } from '../services/settings';
 import { supabase } from '../services/supabase';
 import { storageService } from '../services/storage';
@@ -27,13 +28,17 @@ export function UserSettings({ isDark, onThemeChange }: UserSettingsProps) {
   const loadSettings = async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
-      const settings = await settingsService.getUserSettings(user?.id);
+      const response = await apiClient.getPreferences();
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
       
+      const settings = response.preferences;
       if (settings) {
-        setDisplayName(settings.display_name || '');
+        setDisplayName(settings.displayName || '');
         setTheme(settings.theme);
         setSavedTheme(settings.theme);
-        setCurrentAvatar(settings.avatar_url);
+        setCurrentAvatar(settings.avatarUrl);
       }
       
       // Update the theme immediately

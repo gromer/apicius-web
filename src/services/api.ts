@@ -1,53 +1,6 @@
+import { ApiError, CreateRecipeRequest, CreateRecipeResponse, EarlyAccessRequest, GetRecipeResponse, GetRecipesResponse, GetUserPreferencesResponse, ImportRecipeResponseBody, Recipe, UserPreferences } from '../types/api';
 import { supabase } from './supabase';
 
-// Types
-interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-interface ForgotPasswordRequest {
-  email: string;
-}
-
-interface UpdatePasswordRequest {
-  accessToken: string;
-  newPassword: string;
-}
-
-interface BetaUserRequest {
-  email: string;
-}
-
-interface UserPreferences {
-  avatarUrl: string;
-  displayName: string;
-  id: string;
-  theme: string;
-}
-
-interface Recipe {
-  createdAt: Date;
-  id: string;
-  isPublic: boolean;
-  recipeMarkdown: string;
-  updatedAt: Date | null;
-  userId: string;
-}
-
-interface BaseResponseBody {
-  error: ErrorResponse | null;
-}
-
-interface ErrorResponse {
-    error: string;
-}
-
-interface ImportRecipeResponseBody extends BaseResponseBody {
-  importedRecipe: Recipe | null;
-}
-
-// API Client class
 class ApiClient {
   private baseUrl: string;
   private headers: HeadersInit = {
@@ -68,22 +21,32 @@ class ApiClient {
     };
   }
 
-  // Beta Users endpoints
-  async addBetaUser(data: BetaUserRequest): Promise<Response> {
-    return fetch(`${this.baseUrl}/beta-users`, {
+  // Early Access endpoints
+  async addEarlyAccessRequest(data: EarlyAccessRequest): Promise<void | ApiError> {
+    const response = await fetch(`${this.baseUrl}/early-access`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify(data),
     });
+
+    if (response.ok) {
+      return;
+    }
+
+    const json = await response.json();
+    throw new Error(json.error);
   }
 
   // Preferences endpoints
-  async getPreferences(): Promise<Response> {
+  async getPreferences(): Promise<GetUserPreferencesResponse> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/preferences`, {
+    const response = await fetch(`${this.baseUrl}/preferences`, {
       credentials: 'include',
       headers,
     });
+
+    const json = await response.json();
+    return json as GetUserPreferencesResponse;
   }
 
   async updatePreferences(data: Partial<UserPreferences>): Promise<Response> {
@@ -97,35 +60,44 @@ class ApiClient {
   }
 
   // Recipes endpoints
-  async getRecipes(): Promise<Response> {
+  async getRecipes(): Promise<GetRecipesResponse> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes`, {
+    const response = await fetch(`${this.baseUrl}/recipes`, {
       credentials: 'include',
       headers,
     });
+
+    const json = await response.json();
+    return json as GetRecipesResponse;
   }
 
-  async createRecipe(data: Recipe): Promise<Response> {
+  async createRecipe(data: CreateRecipeRequest): Promise<CreateRecipeResponse> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes`, {
+    const response = await fetch(`${this.baseUrl}/recipes`, {
       credentials: 'include',
       method: 'POST',
       headers,
       body: JSON.stringify(data),
     });
+
+    const json = await response.json();
+    return json as CreateRecipeResponse;
   }
 
-  async getRecipe(id: string): Promise<Response> {
+  async getRecipe(id: string): Promise<GetRecipeResponse> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes/${id}`, {
+    const response = await fetch(`${this.baseUrl}/recipes/${id}`, {
       credentials: 'include',
       headers,
     });
+
+    const json = await response.json();
+    return json as GetRecipeResponse;
   }
 
-  async updateRecipe(id: string, data: Partial<Recipe>): Promise<Response> {
+  async updateRecipe(id: string, data: Partial<Recipe>): Promise<void> {
     const headers = await this.getAuthHeader();
-    return fetch(`${this.baseUrl}/recipes/${id}`, {
+    await fetch(`${this.baseUrl}/recipes/${id}`, {
       credentials: 'include',
       method: 'PATCH',
       headers,
@@ -146,15 +118,20 @@ class ApiClient {
     const headers = await this.getAuthHeader();
     const formData = new FormData();
     files.forEach(file => {
+      console.log(file.name);
       formData.append('files[]', file);
     });
+
+    if (files.length === 0) {
+      throw new Error('No files provided');
+    }
 
     const response = await fetch(`${this.baseUrl}/recipes/import-image`, {
       body: formData,
       credentials: 'include',
       headers: {
         ...headers,
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': `Content-Type: multipart/form-data`
       },
       method: 'POST',
     });

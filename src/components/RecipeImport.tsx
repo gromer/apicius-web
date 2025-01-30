@@ -95,7 +95,7 @@ export function RecipeImport() {
         // );
 
         const importRecipeResponse = await apiClient.importRecipeFromImage(images)
-        setRecipe(importRecipeResponse.importedRecipe!.recipeMarkdown);
+        setRecipe(importRecipeResponse.recipeMarkdown);
         // let fullRecipe = '';
         // for await (const chunk of openAIService.extractRecipeFromImage(base64Images, true, user?.id)) {
         //   fullRecipe += chunk;
@@ -104,7 +104,7 @@ export function RecipeImport() {
         setIsStreaming(false);
       } else {
         const importRecipeResponse = await apiClient.importRecipeFromText(recipeText)
-        setRecipe(importRecipeResponse.importedRecipe!.recipeMarkdown);
+        setRecipe(importRecipeResponse.recipeMarkdown);
         // let fullRecipe = '';
         // for await (const chunk of openAIService.extractRecipeFromText(recipeText, 'text', true, user?.id)) {
         //   fullRecipe += chunk;
