@@ -6,14 +6,22 @@ import { recipesService } from '../services/recipes';
 import { Recipe } from '../types/api';
 
 interface RecipeModel {
+  created_at: string;
   id: string;
   recipe_markdown: string;
-  created_at: string;
+  updated_at?: string;
 }
 
 interface RecipeListProps {
   selectedRecipeId: string | null;
   onRecipeSelect: (id: string) => void;
+}
+
+function getRecipeUpdatedOrCreatedAtText(recipe: RecipeModel) {
+  const useUpdatedDate = recipe.updated_at !== undefined;
+  const verb = useUpdatedDate ? 'Updated' : 'Created';
+  const changeDate = useUpdatedDate ? new Date(recipe.updated_at!) : new Date(recipe.created_at);
+  return `${verb} ${formatDistanceToNow(changeDate, { addSuffix: true })}`;
 }
 
 export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps) {
@@ -34,12 +42,18 @@ export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps
             throw new Error(getRecipesResponse.error.message);
           }
 
-          const recipes = getRecipesResponse.recipes ?? [];
+          const recipes = getRecipesResponse
+            .recipes
+            ?.sort((a, b) => (a.updatedAt ?? a.createdAt) > (b.updatedAt ?? b.createdAt) ? -1 : 1)
+            ?? [];
+
           console.log('Recipe count: ' + recipes.length);
+
           const mapper = (recipe: Recipe) => ({
-            id: recipe.id,
             created_at: recipe.createdAt.toString(),
-            recipe_markdown: recipe.recipeMarkdown
+            id: recipe.id,
+            recipe_markdown: recipe.recipeMarkdown,
+            updated_at: recipe.updatedAt?.toString(),
           });
 
           setRecipes(recipes.map(mapper));
@@ -87,13 +101,13 @@ export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps
               <button
                 onClick={() => onRecipeSelect(recipe.id)}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700 ${selectedRecipeId === recipe.id
-                    ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-900 dark:text-gray-100'
+                  ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+                  : 'text-gray-900 dark:text-gray-100'
                   }`}
               >
                 <div className="font-medium">{getRecipeName(recipe.recipe_markdown)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Created {formatDistanceToNow(new Date(recipe.created_at), { addSuffix: true })}
+                  {getRecipeUpdatedOrCreatedAtText(recipe)}
                 </div>
               </button>
             </li>
