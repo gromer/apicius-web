@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { RecipeView } from '../components/RecipeView';

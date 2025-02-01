@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { useUser } from '../contexts/UserContext';
 import { MarkdownEditor } from './MarkdownEditor';
 import { apiClient } from '../services/api';
+import { useRecipeList } from '../contexts/RecipeListContext';
 
 export function RecipeImport() {
   const { user } = useUser();
@@ -21,6 +22,7 @@ export function RecipeImport() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedRecipe, setEditedRecipe] = useState<string>('');
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const { refreshRecipeList } = useRecipeList();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -139,6 +141,7 @@ export function RecipeImport() {
         recipeMarkdown: recipe,
         userId: user?.id
       });
+      await refreshRecipeList();
       setShowImport(true);
       setIsEditing(false);
       setRecipe('');

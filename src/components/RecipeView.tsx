@@ -6,6 +6,7 @@ import { recipesService } from '../services/recipes';
 import ReactMarkdown from 'react-markdown';
 import { useUser } from '../contexts/UserContext';
 import { MarkdownEditor } from './MarkdownEditor';
+import { useRecipeList } from '../contexts/RecipeListContext';
 
 interface RecipeViewProps {
   recipeId: string;
@@ -21,6 +22,7 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedRecipe, setEditedRecipe] = useState<string>('');
+  const { refreshRecipeList } = useRecipeList();
 
   useEffect(() => {
     loadRecipe();
@@ -60,6 +62,7 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
     try {
       setIsDeleting(true);
       await recipesService.deleteRecipe(recipeId);
+      await refreshRecipeList();
       navigate('/import');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete recipe');
