@@ -1,82 +1,33 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useUser } from '../contexts/UserContext';
-import { apiClient } from '../services/api';
-import { recipesService } from '../services/recipes';
+import { useRecipeList } from '../contexts/RecipeListContext';
 import { Recipe } from '../types/api';
-
-interface RecipeModel {
-  created_at: string;
-  id: string;
-  recipe_markdown: string;
-  updated_at?: string;
-}
 
 interface RecipeListProps {
   selectedRecipeId: string | null;
   onRecipeSelect: (id: string) => void;
 }
 
-function getRecipeUpdatedOrCreatedAtText(recipe: RecipeModel) {
-  const useUpdatedDate = recipe.updated_at !== undefined;
+function getRecipeUpdatedOrCreatedAtText(recipe: Recipe) {
+  const useUpdatedDate = recipe.updatedAt !== null && recipe.updatedAt > recipe.createdAt;
   const verb = useUpdatedDate ? 'Updated' : 'Created';
-  const changeDate = useUpdatedDate ? new Date(recipe.updated_at!) : new Date(recipe.created_at);
+  const changeDate = useUpdatedDate ? new Date(recipe.updatedAt!) : new Date(recipe.createdAt);
   return `${verb} ${formatDistanceToNow(changeDate, { addSuffix: true })}`;
 }
 
 export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps) {
   const { user } = useUser();
-  const [recipes, setRecipes] = React.useState<RecipeModel[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const { recipes, isLoading, error, refreshRecipeList } = useRecipeList();
 
   React.useEffect(() => {
-    const loadRecipes = async () => {
-      // Only load recipes if user is authenticated
-      if (user) {
-        try {
-          setIsLoading(true);
-          setError(null);
-          const getRecipesResponse = await apiClient.getRecipes();
-          if (getRecipesResponse.error) {
-            throw new Error(getRecipesResponse.error.message);
-          }
+    if (user) {
+      refreshRecipeList();
+    }
+  }, [user?.id, refreshRecipeList]);
 
-          const recipes = getRecipesResponse
-            .recipes
-            ?.sort((a, b) => (a.updatedAt ?? a.createdAt) > (b.updatedAt ?? b.createdAt) ? -1 : 1)
-            ?? [];
-
-          console.log('Recipe count: ' + recipes.length);
-
-          const mapper = (recipe: Recipe) => ({
-            created_at: recipe.createdAt.toString(),
-            id: recipe.id,
-            recipe_markdown: recipe.recipeMarkdown,
-            updated_at: recipe.updatedAt?.toString(),
-          });
-
-          setRecipes(recipes.map(mapper));
-        } catch (err) {
-          console.error('Failed to load recipes:', err);
-          setError('Failed to load recipes');
-          setRecipes([]);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        // Clear recipes if user is not authenticated
-        setRecipes([]);
-        setIsLoading(false);
-        setError(null);
-      }
-    };
-
-    loadRecipes();
-  }, [user?.id]);
-
-  const getRecipeName = (markdown: string) => {
-    const firstLine = markdown.split('\n')[0];
+  const getRecipeName = (recipe: Recipe) => {
+    const firstLine = recipe.recipeMarkdown.split('\n')[0];
     return firstLine.replace(/^#\s+/, '');
   };
 
@@ -105,7 +56,7 @@ export function RecipeList({ selectedRecipeId, onRecipeSelect }: RecipeListProps
                   : 'text-gray-900 dark:text-gray-100'
                   }`}
               >
-                <div className="font-medium">{getRecipeName(recipe.recipe_markdown)}</div>
+                <div className="font-medium">{getRecipeName(recipe)}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {getRecipeUpdatedOrCreatedAtText(recipe)}
                 </div>
