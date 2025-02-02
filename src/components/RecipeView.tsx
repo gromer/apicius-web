@@ -23,6 +23,20 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedRecipe, setEditedRecipe] = useState<string>('');
   const { refreshRecipeList } = useRecipeList();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      // If we're in mobile and editing, exit edit mode
+      if (window.innerWidth < 1024 && isEditing) {
+        setIsEditing(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isEditing]);
 
   useEffect(() => {
     loadRecipe();
@@ -72,8 +86,10 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
   };
 
   const handleStartEditing = () => {
-    setEditedRecipe(recipe);
-    setIsEditing(true);
+    if (!isMobile) {
+      setEditedRecipe(recipe);
+      setIsEditing(true);
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -104,7 +120,7 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         <div className="space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
@@ -113,10 +129,12 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
           )}
 
           <div 
-            className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6"
+            className={`${
+              !isMobile ? 'bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6 hover:ring-2 hover:ring-indigo-500 dark:hover:ring-indigo-400 hover:ring-opacity-50 cursor-pointer' : ''
+            }`}
             onClick={!isEditing ? handleStartEditing : undefined}
-            role={!isEditing ? "button" : undefined}
-            tabIndex={!isEditing ? 0 : undefined}
+            role={!isEditing && !isMobile ? "button" : undefined}
+            tabIndex={!isEditing && !isMobile ? 0 : undefined}
           >
             {isEditing ? (
               <MarkdownEditor
@@ -126,7 +144,7 @@ export function RecipeView({ recipeId }: RecipeViewProps) {
                 onSave={handleSaveEdit}
               />
             ) : (
-              <div className="prose prose-sm dark:prose-invert max-w-none hover:ring-2 hover:ring-indigo-500 dark:hover:ring-indigo-400 hover:ring-opacity-50 rounded-lg transition-shadow duration-200">
+              <div className="prose dark:prose-invert max-w-none lg:prose-lg prose-headings:mb-3 prose-h1:text-2xl lg:prose-h1:text-3xl prose-h2:text-xl lg:prose-h2:text-2xl prose-h3:text-lg lg:prose-h3:text-xl">
                 <ReactMarkdown>{recipe}</ReactMarkdown>
               </div>
             )}
