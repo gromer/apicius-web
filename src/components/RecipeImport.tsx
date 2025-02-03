@@ -27,7 +27,7 @@ export function RecipeImport() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
 
     const invalidFiles = files.filter(file => !validTypes.includes(file.type.toLowerCase()));
     if (invalidFiles.length > 0) {
@@ -37,7 +37,7 @@ export function RecipeImport() {
 
     const oversizedFiles = files.filter(file => file.size > maxSize);
     if (oversizedFiles.length > 0) {
-      setError('All files must be less than 10MB');
+      setError('All files must be less than 5MB each');
       return;
     }
 

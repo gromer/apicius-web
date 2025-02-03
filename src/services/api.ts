@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 
 class ApiClient {
   private baseUrl: string;
-  private headers: HeadersInit = {
+  private jsonHeaders: HeadersInit = {
     'Content-Type': 'application/json',
   };
 
@@ -11,12 +11,16 @@ class ApiClient {
     this.baseUrl = import.meta.env.VITE_API_URL!;
   }
 
-  private async getAuthHeader(): Promise<HeadersInit> {
+  private async getAuthHeader(setJsonContentType: boolean): Promise<HeadersInit> {
     const session = await supabase.auth.getSession();
     const token = session.data.session?.access_token;
 
-    return {
-      ...this.headers,
+    return  setJsonContentType
+    ? {
+      ...this.jsonHeaders,
+      Authorization: token ? `Bearer ${token}` : '',
+    }
+    : {
       Authorization: token ? `Bearer ${token}` : '',
     };
   }
@@ -25,7 +29,7 @@ class ApiClient {
   async addEarlyAccessRequest(data: EarlyAccessRequest): Promise<void | ApiError> {
     const response = await fetch(`${this.baseUrl}/early-access`, {
       method: 'POST',
-      headers: this.headers,
+      headers: this.jsonHeaders,
       body: JSON.stringify(data),
     });
 
@@ -39,7 +43,7 @@ class ApiClient {
 
   // Preferences endpoints
   async getPreferences(): Promise<GetUserPreferencesResponse> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     const response = await fetch(`${this.baseUrl}/preferences`, {
       credentials: 'include',
       headers,
@@ -50,7 +54,7 @@ class ApiClient {
   }
 
   async updatePreferences(data: Partial<UserPreferences>): Promise<Response> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     return fetch(`${this.baseUrl}/preferences`, {
       credentials: 'include',
       method: 'PATCH',
@@ -61,7 +65,7 @@ class ApiClient {
 
   // Recipes endpoints
   async getRecipes(): Promise<GetRecipesResponse> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     const response = await fetch(`${this.baseUrl}/recipes`, {
       credentials: 'include',
       headers,
@@ -72,7 +76,7 @@ class ApiClient {
   }
 
   async createRecipe(data: CreateRecipeRequest): Promise<CreateRecipeResponse> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     const response = await fetch(`${this.baseUrl}/recipes`, {
       credentials: 'include',
       method: 'POST',
@@ -85,7 +89,7 @@ class ApiClient {
   }
 
   async getRecipe(id: string): Promise<GetRecipeResponse> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     const response = await fetch(`${this.baseUrl}/recipes/${id}`, {
       credentials: 'include',
       headers,
@@ -96,7 +100,7 @@ class ApiClient {
   }
 
   async updateRecipe(id: string, data: Partial<Recipe>): Promise<void> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     await fetch(`${this.baseUrl}/recipes/${id}`, {
       credentials: 'include',
       method: 'PATCH',
@@ -106,7 +110,7 @@ class ApiClient {
   }
 
   async deleteRecipe(id: string): Promise<void> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     await fetch(`${this.baseUrl}/recipes/${id}`, {
       credentials: 'include',
       method: 'DELETE',
@@ -115,11 +119,11 @@ class ApiClient {
   }
 
   async importRecipeFromImage(files: File[]): Promise<ImportRecipeResponseBody> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(false);
     const formData = new FormData();
     files.forEach(file => {
       console.log(file.name);
-      formData.append('files[]', file);
+      formData.append('files', file);
     });
 
     if (files.length === 0) {
@@ -129,10 +133,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}/recipes/import-image`, {
       body: formData,
       credentials: 'include',
-      headers: {
-        ...headers,
-        'Content-Type': `Content-Type: multipart/form-data`
-      },
+      headers: headers,
       method: 'POST',
     });
 
@@ -141,7 +142,7 @@ class ApiClient {
   }
 
   async importRecipeFromText(text: string): Promise<ImportRecipeResponseBody> {
-    const headers = await this.getAuthHeader();
+    const headers = await this.getAuthHeader(true);
     const response = await fetch(`${this.baseUrl}/recipes/import-text`, {
       body: JSON.stringify({ text }),
       credentials: 'include',
